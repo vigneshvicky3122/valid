@@ -1,5 +1,5 @@
-import React from 'react'
-
+import React from 'react';
+import {Link} from 'react-router-dom'
 function Dashboard(props) {
   return <>
 <div id="content-wrapper" className="d-flex flex-column container-fluid">
@@ -322,9 +322,10 @@ function Dashboard(props) {
     </div>
 </footer>
 {/* <!-- End of Footer --> */}
-
+<div className='text-center my-auto'>
+<Link to='/view-student'><button type="button" className="btn btn-outline-info">Go to Students Page</button></Link>
 </div>
-
+</div>
   </>
 }
 
