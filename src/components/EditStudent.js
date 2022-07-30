@@ -1,51 +1,130 @@
-import React  from 'react';
-import { useState } from 'react';
-import { useNavigate,useParams } from 'react-router-dom';
+import React,{useState, useEffect}  from 'react';
+import {useNavigate,useParams} from 'react-router-dom';
+import {url} from '../App'
+import axios from 'axios';
+import {useFormik} from 'formik';
+import * as yup from 'yup'
 
-function EditStudent(props) {
-  let use = useParams(); 
-  
-  let [name,setName]=useState(props.editStudent.student[use.id].name);
-  let [email,setEmail]=useState(props.editStudent.student[use.id].email);
-  let [mobile,setMobile]=useState(props.editStudent.student[use.id].mobile);
-  let [batch,setBatch]=useState(props.editStudent.student[use.id].batch);
+function EditStudent() {
+  let params = useParams();
 
-  let navi = useNavigate();
+  let [name,setName] = useState("");
+  let [email,setEmail] = useState("");
+  let [mobile,setMobile] = useState("");
+  let [batch,setBatch] = useState("");
 
-  let handleSubmit = ()=>{
-    let data = {
-      name,
-      email,
-      mobile,
-      batch,
-    }
-    let students = [...props.editStudent.student];
-    students.splice(use.id,1,data)
-    props.editStudent.setStudent(students)
-    navi('/view-student');
+  useEffect(()=>{
+    getData()
+  },[])
+
+  let getData = async ()=>{
+    let res = await axios.get(`${url}/${params.id}`)
+    setName(res.data.name)
+    setEmail(res.data.email)
+    setMobile(res.data.mobile)
+    setBatch(res.data.batch)
   }
+ 
 
+  let navigate = useNavigate();
+
+
+  let handleSubmit = async (data)=>{
+
+      let res = await axios.put(`${url}/${params.id}`,data)
+      
+      if(res.status===200)
+        navigate('/view-student')
+  }
+  const formik = useFormik({
+    initialValues:{
+      name:"",
+      email:"",
+      mobile:"",
+      batch:"",
+    },
+    validationSchema: yup.object({
+      name:yup.string().required('* Required'),
+      email:yup.string().email('Enter a valid email').required('* Required'),
+      mobile:yup.string().matches(/^\d{10}$/, "Enter a valid Mobile number").required('* Required'),
+      batch:yup.string().max(10,'Maximum character allowed is 10').min(2,'Minimum Character Should be 2').required('* Required')
+    }),
+    onSubmit:values=>{
+      handleSubmit(values)
+    }
+
+  })
   return <>
- <form className='position-absolute top-10 start-50'>
-  <div className="mb-3">
-    <label htmlFor="exampleInputEmail1" className="form-label">name</label>
-    <input type="text"  value={name} className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" onChange={(e)=>setName(e.target.value)}/>
-    <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Email</label>
-    <input type="text" value={email} className="form-control" id="exampleInputPassword1"onChange={(e)=>setEmail(e.target.value)}/>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Mobile Number</label>
-    <input type="text"  value={mobile} className="form-control" id="exampleInputPassword1"onChange={(e)=>setMobile(e.target.value)}/>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Batch</label>
-    <input type="text" value={batch} className="form-control" id="exampleInputPassword1"onChange={(e)=>setBatch(e.target.value)}/>
-  </div>
-  <button type="button" className="btn btn-primary" onClick={()=>handleSubmit()}>Submit</button>
-</form>
+  <div>
+      <h4 style={{'color': 'black'}}><strong>Edit Student Details</strong></h4>
+      <form onSubmit={formik.handleSubmit}>
+        <div className='form-group'>
+          <label htmlFor='name'>Enter your Name and Last Name</label>
+          <input
+            id='name'
+            name='name'
+            type='text'
+            className='form-control'
+            placeholder='Ex: Vigensh A'
+            onChange={(e)=>setName(e.target.value)}
+            onBlur={formik.handleChange}
+            value={name}
+          />
+          {formik.touched.name && formik.errors.name?(<div style={{"color":"red"}}>{formik.errors.name}</div>):null}
+        </div>
+        <div className='form-group'>
+          <label htmlFor='name'>Enter your Email</label>
+          <input
+            id='email'
+            name='email'
+            type='email'
+            className='form-control'
+            placeholder='Ex: vigenshvicy@3122@gmail.com'
+            onChange={(e)=>setEmail(e.target.value)}
+            onBlur={formik.handleChange}
+            value={email}
+          />
+          {formik.touched.email && formik.errors.email?(<div style={{"color":"red"}}>{formik.errors.email}</div>):null}
+        </div>
+
+        <div className='form-group'>
+          <label htmlFor='name'>Enter your Mobile Number</label>
+          <input
+            id='mobile'
+            name='mobile'
+            type='text'
+            className='form-control'
+            placeholder='Ex: 8304873122'
+            onChange={(e)=>setMobile(e.target.value)}
+            onBlur={formik.handleChange}
+            value={mobile}
+          />
+          {formik.touched.mobile && formik.errors.mobile?(<div style={{"color":"red"}}>{formik.errors.mobile}</div>):null}
+        </div>
+
+        <div className='form-group'>
+          <label htmlFor='name'>Enter your Batch code</label>
+          <input
+            id='batch'
+            name='batch'
+            type='text'
+            className='form-control'
+            placeholder='Ex: B36TWD'
+            onChange={(e)=>setBatch(e.target.value)}
+            onBlur={formik.handleChange}
+            value={batch}
+          />
+          {formik.touched.batch && formik.errors.batch?(<div style={{"color":"red"}}>{formik.errors.batch}</div>):null}
+        </div>
+
+        <div className="form-group">
+            <button type="submit" className="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
   </>
 }
+
+
+
 export default EditStudent
